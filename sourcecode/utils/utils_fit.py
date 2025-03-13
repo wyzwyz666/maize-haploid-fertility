@@ -96,15 +96,15 @@ def fit_one_epoch(backbone, model_train, model, loss_history, optimizer, epoch, 
             
             val_loss    += loss_value.item()
             # # 计算Top-1准确率
-            # accuracy        = torch.mean((torch.argmax(F.softmax(outputs, dim=-1), dim=-1) == targets).type(torch.FloatTensor))
-            # val_accuracy    += accuracy.item()
+            accuracy        = torch.mean((torch.argmax(F.softmax(outputs, dim=-1), dim=-1) == targets).type(torch.FloatTensor))
+            val_accuracy    += accuracy.item()
             # 初始化正确预测数量和总预测数量
-            correct_predictions = 0
-            total_predictions = 0
+            # correct_predictions = 0
+            # total_predictions = 0
 
             # 计算每个batch的正确预测数量和总预测数量
-            correct_predictions += (torch.argmax(F.softmax(outputs, dim=-1), dim=-1) == targets).sum().item()
-            total_predictions += targets.size(0)
+            # correct_predictions += (torch.argmax(F.softmax(outputs, dim=-1), dim=-1) == targets).sum().item()
+            # total_predictions += targets.size(0)
 
             # 计算Top-1准确率
             accuracy = correct_predictions / total_predictions
@@ -119,7 +119,7 @@ def fit_one_epoch(backbone, model_train, model, loss_history, optimizer, epoch, 
         if local_rank == 0:
             pbar.set_postfix(**{'total_loss': val_loss / (iteration + 1),
                                 'acc_val'  : val_accuracy / (iteration + 1),
-                                'top3_val'  : val_top3_accuracy / (iteration + 1),
+                                # 'top3_val'  : val_top3_accuracy / (iteration + 1),
                                 'lr'        : get_lr(optimizer)})
             pbar.update(5)
 
@@ -132,7 +132,7 @@ def fit_one_epoch(backbone, model_train, model, loss_history, optimizer, epoch, 
         print('Finish Validation')
         loss_history.append_loss(epoch + 1, total_loss / epoch_step, val_loss / epoch_step_val, total_accuracy / epoch_step, val_accuracy / epoch_step_val)
         print('Epoch:' + str(epoch + 1) + '/' + str(Epoch))
-        # print('Total Loss: %.3f || Val Loss: %.3f ' % (total_loss / epoch_step, val_loss / epoch_step_val))
+        print('Total Loss: %.3f || Val Loss: %.3f ' % (total_loss / epoch_step, val_loss / epoch_step_val))
         print('Acc_Val: %.4f ' % (val_accuracy / epoch_step_val))
         # print('Top3_Val: %.3f ' % (val_top3_accuracy / epoch_step_val))
         
