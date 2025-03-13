@@ -25,11 +25,11 @@ level5
 # all_data_dir = 'datasets1/traintest'
 # train_files, test_files, train_labels, test_labels = split_dataset_into_test_and_train_sets(all_data_dir,test_size=0.1)
 # # 将训练集和测试集的文件路径和类别索引写入到新的txt文件中
-# with open('clstrain0.txt', 'w') as f:
+# with open('clstrain.txt', 'w') as f:
 #     for file, label in zip(train_files, train_labels):
 #         f.write(str(label) + ';' + file + '\n')
 
-# with open('clstest0.txt', 'w') as f:
+# with open('clstest.txt', 'w') as f:
 #     for file, label in zip(test_files, test_labels):
 #         f.write(str(label) + ';' + file + '\n')
 ```
