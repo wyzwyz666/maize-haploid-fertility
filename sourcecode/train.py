@@ -15,7 +15,7 @@ from utils.utils import (download_weights, get_classes, get_lr_scheduler, set_op
 from utils.utils_fit import fit_one_epoch
 from train_test_split import split_dataset_into_test_and_train_sets
 CUDA_DEVICES = 0, 1, 2, 3, 4, 5, 6, 7
-os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 def objective(trial):
     # lr = trial.suggest_float("lr", 5e-6, 1e-4, log=True)
@@ -48,10 +48,10 @@ def objective(trial):
     save_period = 1
     save_dir = 'logs/Maize-IRNet'
     num_workers = 12
-    # 获取所有文件的路径和它们的类别索引
+    # Retrieve the paths of all files and their category indexes
     all_data_dir = 'datasets1/traintest'
     train_files, test_files, train_labels, test_labels = split_dataset_into_test_and_train_sets(all_data_dir,test_size=0.1)
-    # 将训练集和测试集的文件路径和类别索引写入到新的txt文件中
+    # Write the file paths and category indexes of the training and testing sets to a new txt file
     with open('clstrain.txt', 'w') as f:
         for file, label in zip(train_files, train_labels):
             f.write(str(label) + ';' + file + '\n')
@@ -75,9 +75,7 @@ def objective(trial):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         local_rank = 0
         rank = 0
-    # ----------------------------------------------------#
-    #   下载预训练权重
-    # ----------------------------------------------------#
+    #  Download pre trained weights
     if pretrained:
         if distributed:
             if local_rank == 0:
@@ -85,9 +83,7 @@ def objective(trial):
             dist.barrier()
         else:
             download_weights(backbone)
-    # ------------------------------------------------------#
-    #   获取classes
-    # ------------------------------------------------------#
+    #   get classes
     class_names, num_classes = get_classes(classes_path)
     if backbone not in ['vit_b_16', 'vit_b_32', 'vit_l_16', 'vit_l_32', 'swin_transformer_tiny', 'swin_transformer_small', 'swin_transformer_base']:
         model = get_model_from_name[backbone](num_classes=num_classes, pretrained=pretrained)
@@ -96,14 +92,9 @@ def objective(trial):
     if not pretrained:
         weights_init(model)
     if model_path != "":
-        # ------------------------------------------------------#
-        #   权值文件请看README
-        # ------------------------------------------------------#
         if local_rank == 0:
             print('Load weights {}.'.format(model_path))
-        # ------------------------------------------------------#
-        #   根据预训练权重的Key和模型的Key进行加载
-        # ------------------------------------------------------#
+        #   Load based on the pre trained weight key and the model key
         model_dict = model.state_dict()
         # pretrained_dict = torch.load(model_path, map_location=device)
         pretrained_dict = torch.load(model_path)
@@ -117,26 +108,19 @@ def objective(trial):
                 no_load_key.append(k)
         model_dict.update(temp_dict)
         model.load_state_dict(model_dict)
-        # ------------------------------------------------------#
-        #   显示没有匹配上的Key
-        # ------------------------------------------------------#
+        #   Display no matching keys
         if local_rank == 0:
             print("\nSuccessful Load Key:", str(load_key)[:500], "……\nSuccessful Load Key Num:", len(load_key))
             print("\nFail To Load Key:", str(no_load_key)[:500], "……\nFail To Load Key num:", len(no_load_key))
-            print("\n\033[1;33;44m温馨提示，head部分没有载入是正常现象，Backbone部分没有载入是错误的。\033[0m")
 
-    # ----------------------#
-    #   记录Loss
-    # ----------------------#
+    #   Record Loss
     if local_rank == 0:
         loss_history = LossHistory(backbone, save_dir, model, input_shape=input_shape)
     else:
         loss_history = None
 
-    # ------------------------------------------------------------------#
-    #   torch 1.2不支持amp，建议使用torch 1.7.1及以上正确使用fp16
-    #   因此torch1.2这里显示"could not be resolve"
-    # ------------------------------------------------------------------#
+    # Torch 1.2 does not support amp, it is recommended to use Torch 1.7.1 and above to correctly use FP16
+    # Therefore, torch1.2 displays' could not be resolved 'here
     if fp16:
         from torch.cuda.amp import GradScaler as GradScaler
 
@@ -144,18 +128,15 @@ def objective(trial):
     else:
         scaler = None
     model_train = model.train()
-    # ----------------------------#
-    #   多卡同步Bn
-    # ----------------------------#
+    
+    #   Synchronize BN
     if sync_bn and ngpus_per_node > 1 and distributed:
         model_train = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model_train)
     elif sync_bn:
         print("Sync_bn is not support in one gpu or not distributed.")
     if Cuda:
         if distributed:
-            # ----------------------------#
-            #   多卡平行运行
-            # ----------------------------#
+            #   DataParallel
             model_train = model_train.cuda(local_rank)
             model_train = torch.nn.parallel.DistributedDataParallel(model_train, device_ids=[local_rank],find_unused_parameters=True)
         else:
@@ -163,9 +144,7 @@ def objective(trial):
             # cudnn.benchmark = True
             # model_train = model_train.cuda()
             model_train = model.to('cuda')
-    # ---------------------------#
-    #   读取数据集对应的txt
-    # ---------------------------#
+    #   Read the txt corresponding to the dataset
     with open(train_annotation_path, encoding='utf-8') as f:
         train_lines = f.readlines()
     with open(test_annotation_path, encoding='utf-8') as f:
@@ -184,12 +163,7 @@ def objective(trial):
             lr_decay_type=lr_decay_type, save_period=save_period, save_dir=save_dir, num_workers=num_workers,
             num_train=num_train, num_val=num_val
         )
-    # ---------------------------------------------------------#
-    #   总训练世代指的是遍历全部数据的总次数
-    #   总训练步长指的是梯度下降的总次数 
-    #   每个训练世代包含若干训练步长，每个训练步长进行一次梯度下降。
-    #   此处仅建议最低训练世代，上不封顶，计算时只考虑了解冻部分
-    # ----------------------------------------------------------#
+
     wanted_step = 3e4 if optimizer_type == "sgd" else 1e4
     total_step = num_train // Unfreeze_batch_size * UnFreeze_Epoch
     if total_step <= wanted_step:
@@ -201,28 +175,12 @@ def objective(trial):
                 num_train, Unfreeze_batch_size, UnFreeze_Epoch, total_step))
         print("\033[1;33;44m[Warning] 由于总训练步长为%d，小于建议总步长%d，建议设置总世代为%d。\033[0m" % (
             total_step, wanted_step, wanted_epoch))
-    # ------------------------------------------------------#
-    #   主干特征提取网络特征通用，冻结训练可以加快训练速度
-    #   也可以在训练初期防止权值被破坏。
-    #   Init_Epoch为起始世代
-    #   Freeze_Epoch为冻结训练的世代
-    #   UnFreeze_Epoch总训练世代
-    #   提示OOM或者显存不足请调小Batch_size
-    # ------------------------------------------------------#
+
     if True:
         UnFreeze_flag = False
-        # ------------------------------------#
-        #   冻结一定部分训练
-        # ------------------------------------#
         if Freeze_Train:
             model.freeze_backbone()
-        # -------------------------------------------------------------------#
-        #   如果不冻结训练的话，直接设置batch_size为Unfreeze_batch_size
-        # -------------------------------------------------------------------#
         batch_size = Freeze_batch_size if Freeze_Train else Unfreeze_batch_size
-        # -------------------------------------------------------------------#
-        #   判断当前batch_size，自适应调整学习率
-        # -------------------------------------------------------------------#
         nbs = 128
         lr_limit_max = 1e-3 if optimizer_type == 'adam' else 1e-1
         lr_limit_min = 1e-7 if optimizer_type == 'adam' else 5e-4
@@ -238,19 +196,13 @@ def objective(trial):
             'sgd': optim.SGD(model_train.parameters(), Init_lr_fit, momentum=momentum, nesterov=True)
         }[optimizer_type]
 
-        # ---------------------------------------#
-        #   获得学习率下降的公式
-        # ---------------------------------------#
         lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, UnFreeze_Epoch)
 
-        # ---------------------------------------#
-        #   判断每一个世代的长度
-        # ---------------------------------------#
         epoch_step = num_train // batch_size
         epoch_step_val = num_val // batch_size
 
         if epoch_step == 0 or epoch_step_val == 0:
-            raise ValueError("数据集过小，无法继续进行训练，请扩充数据集。")
+            raise ValueError("The dataset is too small to continue training, please expand the dataset.")
 
         train_dataset = DataGenerator(train_lines, input_shape, True)
         val_dataset = DataGenerator(val_lines, input_shape, False)
@@ -269,20 +221,11 @@ def objective(trial):
                          drop_last=True, collate_fn=detection_collate, sampler=train_sampler)
         gen_val = DataLoader(val_dataset, shuffle=shuffle, batch_size=batch_size, num_workers=num_workers,pin_memory=True,
                              drop_last=True, collate_fn=detection_collate, sampler=val_sampler)
-        # ---------------------------------------#
-        #   开始模型训练
-        # ---------------------------------------#
+        
+        #   Train
         for epoch in range(Init_Epoch, UnFreeze_Epoch):
-            # ---------------------------------------#
-            #   如果模型有冻结学习部分
-            #   则解冻，并设置参数
-            # ---------------------------------------#
             if epoch >= Freeze_Epoch and not UnFreeze_flag and Freeze_Train:
                 batch_size = Unfreeze_batch_size
-
-                # -------------------------------------------------------------------#
-                #   判断当前batch_size，自适应调整学习率
-                # -------------------------------------------------------------------#
                 nbs = 128
                 lr_limit_max = 1e-3 if optimizer_type == 'adam' else 1e-1
                 lr_limit_min = 1e-7 if optimizer_type == 'adam' else 5e-4
@@ -292,16 +235,13 @@ def objective(trial):
                     lr_limit_min = 1e-5 if optimizer_type == 'adam' else 5e-4
                 Init_lr_fit = min(max(batch_size / nbs * Init_lr, lr_limit_min), lr_limit_max)
                 Min_lr_fit = min(max(batch_size / nbs * Min_lr, lr_limit_min * 1e-2), lr_limit_max * 1e-2)
-                # ---------------------------------------#
-                #   获得学习率下降的公式
-                # ---------------------------------------#
                 lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, UnFreeze_Epoch)
                 model.Unfreeze_backbone()
                 epoch_step = num_train // batch_size
                 epoch_step_val = num_val // batch_size
 
                 if epoch_step == 0 or epoch_step_val == 0:
-                    raise ValueError("数据集过小，无法继续进行训练，请扩充数据集。")
+                    raise ValueError("The dataset is too small to continue training, please expand the dataset.")
 
                 if distributed:
                     batch_size = batch_size // ngpus_per_node
@@ -322,8 +262,8 @@ def objective(trial):
         return loss_history.val_accbest
 
 if __name__ == "__main__":
-    storage_name = "sqlite:///optunacirui.db"
-    studyname = "cirui"
+    storage_name = "sqlite:///optunacihua.db"
+    studyname = "cihua"
     study = optuna.create_study(storage=storage_name, pruner=optuna.pruners.MedianPruner(n_warmup_steps=10), direction="maximize",study_name=studyname,load_if_exists=True)
     study.optimize(objective, n_trials=1)
     best_params = study.best_params
