@@ -25,7 +25,7 @@ def add_conv(in_ch, out_ch, ksize, stride, leaky=True):
         stage.add_module('relu6', nn.ReLU6(inplace=True))
     return stage
 
-# 卷积组: Conv2d+BN+ReLU
+# Conv: Conv2d+BN+ReLU
 class BasicConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
         super(BasicConv2d, self).__init__()
@@ -73,7 +73,7 @@ class Stem(nn.Module):
 class Inception_ResNet_A(nn.Module):
     def __init__(self, in_channels, ch1x1, ch3x3red, ch3x3, ch3x3redX2, ch3x3X2_1, ch3x3X2_2, ch1x1ext, scale=1.0):
         super(Inception_ResNet_A, self).__init__()
-        # 缩减指数
+
         self.scale = scale
         # conv1*1(32)
         self.branch_0 = BasicConv2d(in_channels, ch1x1, 1)
@@ -96,7 +96,7 @@ class Inception_ResNet_A(nn.Module):
         x0 = self.branch_0(x)
         x1 = self.branch_1(x)
         x2 = self.branch_2(x)
-        # 拼接
+
         x_res = torch.cat((x0, x1, x2), dim=1)
         x_res = self.conv(x_res)
         return self.relu(x + self.scale * x_res)
@@ -106,7 +106,7 @@ class Inception_ResNet_A(nn.Module):
 class Inception_ResNet_B(nn.Module):
     def __init__(self, in_channels, ch1x1, ch_red, ch_1, ch_2, ch1x1ext, scale=1.0):
         super(Inception_ResNet_B, self).__init__()
-        # 缩减指数
+
         self.scale = scale
         # conv1*1(128)
         self.branch_0 = BasicConv2d(in_channels, ch1x1, 1)
@@ -123,7 +123,7 @@ class Inception_ResNet_B(nn.Module):
     def forward(self, x):
         x0 = self.branch_0(x)
         x1 = self.branch_1(x)
-        # 拼接
+
         x_res = torch.cat((x0, x1), dim=1)
         x_res = self.conv(x_res)
         return self.relu(x + self.scale * x_res)
@@ -133,9 +133,9 @@ class Inception_ResNet_B(nn.Module):
 class Inception_ResNet_C(nn.Module):
     def __init__(self, in_channels, ch1x1, ch3x3redX2, ch3x3X2_1, ch3x3X2_2, ch1x1ext, scale=1.0, activation=True):
         super(Inception_ResNet_C, self).__init__()
-        # 缩减指数
+
         self.scale = scale
-        # 是否激活
+
         self.activation = activation
         # conv1*1(192)
         self.branch_0 = BasicConv2d(in_channels, ch1x1, 1)
@@ -152,7 +152,7 @@ class Inception_ResNet_C(nn.Module):
     def forward(self, x):
         x0 = self.branch_0(x)
         x1 = self.branch_1(x)
-        # 拼接
+
         x_res = torch.cat((x0, x1), dim=1)
         x_res = self.conv(x_res)
         if self.activation:
@@ -182,7 +182,7 @@ class redutionA(nn.Module):
         branch1 = self.branch1(x)
         branch2 = self.branch2(x)
         branch3 = self.branch3(x)
-        # 拼接
+
         outputs = [branch1, branch2, branch3]
         return torch.cat(outputs, 1)
 
@@ -263,16 +263,11 @@ class Inception_ResNetv1(nn.Module):
             blocks.append(Inception_ResNet_B(896, 128, 128, 128, 128, 896, 0.10))
         blocks.append(redutionB(896, 256, 384, 256, 256, 256))
 
-
-
         # for i in range(4):
             # blocks.append(Inception_ResNet_C(1792, 192, 192, 192, 192, 1792, 0.20))
         # blocks.append(Inception_ResNet_C(1792, 192, 192, 192, 192, 1792, activation=False))
-
         blocks.append(GAM_Attention(1792, 1792))
-
-
-
+        
         self.features = nn.Sequential(*blocks)
         self.conv = BasicConv2d(1792, 1536, 1)
         self.global_average_pooling = nn.AdaptiveAvgPool2d((1, 1))
