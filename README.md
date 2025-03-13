@@ -1,11 +1,11 @@
 # import dataset
 datasets1
 
-└── traintest
+  └── traintest
 
-    └── level0
+      └── level0
     
-        └── IMG_20220315_210823.jpg
+          └── IMG_20220315_210823.jpg
 
 # Modify the cls_classes1.txt file in model_data, where each line represents a category
 
