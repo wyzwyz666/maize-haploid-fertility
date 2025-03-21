@@ -1,23 +1,19 @@
 import math
 from functools import partial
-
 import numpy as np
 import torch
 from PIL import Image
-
 from .utils_aug import resize, center_crop
 
 
-#---------------------------------------------------------#
-#   将图像转换成RGB图像，防止灰度图在预测时报错。
-#   代码仅仅支持RGB图像的预测，所有其它类型的图像都会转化成RGB
-#---------------------------------------------------------#
+# Convert the image into RGB image to prevent the gray image from being wrong in prediction.
+# The code only supports the prediction of RGB images, and all other types of images will be converted to RGB
 def cvtColor(image):
-    # 如果图像已经是RGB图像，直接返回
+    # If the image is already an RGB image, return directly
     if len(np.shape(image)) == 3 and np.shape(image)[2] == 3:
         return image 
     else:
-        # 否则，将图像转换为RGB图像
+        # Otherwise, convert the image to RGB image
         image = image.convert('RGB')
         return image 
 
