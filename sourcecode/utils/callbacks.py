@@ -49,7 +49,7 @@ class LossHistory():
         with open(os.path.join(self.log_dir, "epoch_val_acc.txt"), 'a') as f:
             f.write(str(val_accuracy))
             f.write("\n")
-        # 假设这是在某个迭代中
+
         current_time = datetime.datetime.strftime(datetime.datetime.now(),'%Y_%m_%d_%H_%M_%S')
         with open(os.path.join(self.log_dir, "iteration_time_log.txt"), 'a') as f:
             f.write(current_time)
@@ -64,7 +64,6 @@ class LossHistory():
     # def append_acc(self, epoch, train_acc, val_acc):
     #     self.train_acc.append(train_acc)
     #     self.val_acc.append(val_acc)
-    #     # 更新val_accbest
     #     self.val_accbest = max(self.val_accbest, val_acc)
 
     #     with open(os.path.join(self.log_dir, "epoch_train_acc.txt"), 'a') as f:
