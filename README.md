@@ -2,7 +2,7 @@
 
 # Maize-IRNet
 Maize-IRNet is a grading evaluation model of haploid anther emergence and ear seed setting based on Inception-ResNet.
-Please refer to Release for specific APP download and use
+Please refer to [Release](https://github.com/wyzwyz666/maize-haploid-fertility/releases/tag/v1.1.0) for specific APP download and use
 
 # Maize-IRNet Introduction
 Firstly, the modules of Stem and Inception-ResNet are utilized for image feature extraction and multi-scale feature learning. Then, the Reduction module is used for spatial downsampling and feature compression, and the global attention mechanism (GAM) is used to enhance the recognition of key regions of the image.
