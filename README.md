@@ -1,5 +1,4 @@
 # Grading Evaluation of Haploid Fertility Restoration Traits Based on Inception-ResNet in Maize
-![image](https://github.com/user-attachments/assets/4cd42e4d-03ff-41ae-8ecb-b98992986e45)
 
 # Maize-IRNet
 Maize-IRNet is a grading evaluation model of haploid anther emergence and ear seed setting based on Inception-ResNet.
@@ -10,6 +9,7 @@ Firstly, the modules of Stem and Inception-ResNet are utilized for image feature
 
 # Experimental Data Introduction
 We constructed a dataset containing 1,897 high-resolution haploid ear images with different seed setting rates and 6,443 tassel images with different anther emergence rates.
+For details, refer to https://github.com/wyzwyz666/maize-haploid-fertility/blob/main/dataset
 
 # 1、Import dataset
 ```text
@@ -46,10 +46,12 @@ with open('clstest.txt', 'w') as f:
     for file, label in zip(test_files, test_labels):
         f.write(str(label) + ';' + file + '\n')
 ```
-# 5、Install dependencies in requirements.txt(If some dependencies are missing, please install them yourself using the pip command)
+# 5、Environment
 ```text
+Install dependencies in requirements.txt
 Pytorch installation can be done using this command
 pip install torch==2.0.0+cu118 torchvision==0.15.1+cu118 torchaudio==2.0.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+If some dependencies are missing, please install them yourself using the pip command
 ```
 # 6、Adjust parameters，run train.py
 ```text
@@ -57,4 +59,7 @@ such as,
 CUDA_DEVICES = 0, 1, 2, 3, 4, 5, 6, 7
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 ```
-# 7、If you have any further questions, please feel free to contact us：1319836632@qq.com
+# 7、Questions
+```text
+If you have any further questions, please feel free to contact us：2023317110053@webmail.hzau.cn
+```
