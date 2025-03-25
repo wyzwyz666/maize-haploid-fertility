@@ -61,5 +61,5 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 ```
 # 7、Questions
 ```text
-If you have any further questions, please feel free to contact us：2023317110053@webmail.hzau.cn
+If you have any further questions, please feel free to contact us：1319836632@qq.com
 ```
