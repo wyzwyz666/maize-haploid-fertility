@@ -47,8 +47,8 @@ with open('clstest.txt', 'w') as f:
         f.write(str(label) + ';' + file + '\n')
 ```
 # 5、Environment
-```text
 Install dependencies in [requirements.txt](https://github.com/wyzwyz666/maize-haploid-fertility/blob/main/requirements.txt)
+```text
 Pytorch installation can be done using this command
 pip install torch==2.0.0+cu118 torchvision==0.15.1+cu118 torchaudio==2.0.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
 If some dependencies are missing, please install them yourself using the pip command
