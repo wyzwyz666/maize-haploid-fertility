@@ -19,7 +19,7 @@ datasets1
         └── IMG_20220315_210823.jpg
 ```
 
-# 2、Modify the cls_classes1.txt in ./model_data/, where each line represents a category
+# 2、Modify the  [cls_classes1.txt](https://github.com/wyzwyz666/maize-haploid-fertility/blob/main/sourcecode/model_data/cls_classes1.txt), where each line represents a category
 ```text
 level0
 level1
