@@ -9,7 +9,7 @@ Firstly, the modules of Stem and Inception-ResNet are utilized for image feature
 
 # Experimental Data Introduction
 We constructed a dataset containing 1,897 high-resolution haploid ear images with different seed setting rates and 6,443 tassel images with different anther emergence rates.
-For details, refer to https://github.com/wyzwyz666/maize-haploid-fertility/blob/main/dataset
+For details, refer to [dataset](https://github.com/wyzwyz666/maize-haploid-fertility/blob/main/dataset)
 
 # 1、Import dataset
 ```text
@@ -48,7 +48,7 @@ with open('clstest.txt', 'w') as f:
 ```
 # 5、Environment
 ```text
-Install dependencies in requirements.txt
+Install dependencies in [requirements.txt](https://github.com/wyzwyz666/maize-haploid-fertility/blob/main/requirements.txt)
 Pytorch installation can be done using this command
 pip install torch==2.0.0+cu118 torchvision==0.15.1+cu118 torchaudio==2.0.1+cu118 -f https://download.pytorch.org/whl/torch_stable.html
 If some dependencies are missing, please install them yourself using the pip command
